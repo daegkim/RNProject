@@ -42,12 +42,12 @@ const ListMainScreen = ({ navigation }) => {
         item={item}
         index={index}
         containerStyle={{
+          height: (width / 2 - padding * 2) + 100,
           padding: padding,
         }}
         boxStyle={{
           width: width / 2 - padding * 2,
           height: width / 2 - padding * 2,
-          backgroundColor: "blue"
         }}
         onPress={handlePressItem}
       />

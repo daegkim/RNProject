@@ -16,11 +16,9 @@ const ListDetailScreen = ({ route }) => {
   const width = Dimensions.get("window").width;
   const selectedIndex = route.params.index;
   const pageCount = 10;
+  const [renderedItemCount, setRenderedItemCount] = useState(0);
 
   // func
-  const initData = () => {
-    setData([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
-  };
 
   const addEndData = () => {
     if (isMoreLoading) {
@@ -60,17 +58,11 @@ const ListDetailScreen = ({ route }) => {
   };
 
   // flatlist
-  const renderItem = ({ item, index }) => {
+  const renderItem = useCallback(({ item, index }) => {
     const padding = 10;
     const handleLayout = (e) => {
-      const height = e.nativeEvent.layout.height;
-      const pageIndex = selectedIndex % pageCount;
       if (!isInitFinished) {
-        if (index < pageIndex) {
-          setItemHeights(prev => {
-            return [...prev, height];
-          });
-        }
+        setRenderedItemCount(prev => prev + 1);
       }
     }
 
@@ -80,18 +72,17 @@ const ListDetailScreen = ({ route }) => {
         index={index}
         containerStyle={{
           padding: padding,
-          height: width + 30 + (index % 3 === 0 ? 0 : (index % 3 === 1 ? 50 : 100)),
-          backgroundColor: index % 2 ? "red" : "green",
+          height: width + 30 + (item % 3 === 0 ? 0 : (item % 3 === 1 ? 50 : 100)),
+          backgroundColor: item % 3 === 0 ? "red" : (item % 3 === 1 ? "green" : "blue"),
         }}
         boxStyle={{
           width: width - padding * 2,
           height: width - padding * 2,
-          backgroundColor: "blue"
         }}
         onLayout={handleLayout}
       />
     )
-  };
+  }, [isInitFinished]);
 
   const listHeaderItem = () => {
     if (data[0] === 0 || !isInitFinished) {
@@ -150,31 +141,29 @@ const ListDetailScreen = ({ route }) => {
   };
 
   useEffect(() => {
-    const pageIndex = selectedIndex % pageCount;
-    if (itemHeights.length === pageIndex) {
-      let offsets = itemHeights.reduce((prev, curr) => prev + curr, 0);
-      setTimeout(() => {
-        refFlatList.current.scrollToOffset({
-          offset: offsets,
-          animated: false,
-        });
-        setInitFinished(true);
-      }, 10);
-    }
-  }, [itemHeights]);
-
-  useEffect(() => {
     const newData = route.params.data.slice();
     const pageNumber = Math.floor(route.params.index / pageCount);
-    setData(route.params.data.slice(pageNumber * pageCount, (pageNumber + 2) * pageCount));
+    setData(route.params.data.slice(route.params.index, (pageNumber + 2) * pageCount));
   }, [route.params.data, route.params.index]);
+
+  useEffect(() => {
+    if (renderedItemCount > 0 && renderedItemCount === data.length && !isInitFinished) {
+      setData(prev => {
+        // 이 부분 때문에 initialNumToRender를 큰 값으로 변경해야 한다.
+        const newData = route.params.data.slice(0, route.params.index);
+        return [...newData, ...prev];
+      });
+      setInitFinished(true);
+    }
+  }, [renderedItemCount, isInitFinished]);
 
   return (
     <SafeAreaView>
       <FlatList
         ref={refFlatList}
         data={data}
-        initialNumToRender={pageCount + 2} // maintainVisibleContentPosition를 적용시키기 위해서 x + 2를 해준다. +2의 이유는 위 아래 하나씩 더 추가
+        initialNumToRender={data.length} // maintainVisibleContentPosition를 적용시키기 위해서 x + 2를 해준다. +2의 이유는 위 아래 하나씩 더 추가
+        windowSize={5}
         renderItem={renderItem}
         ListHeaderComponent={listHeaderItem}
         ListFooterComponent={listFooterItem}
@@ -182,8 +171,9 @@ const ListDetailScreen = ({ route }) => {
         onEndReached={handleEndReached}
         onScroll={handleFlatListScroll}
         maintainVisibleContentPosition={{
-          minIndexForVisible: 0,
+          minIndexForVisible: 0, //Flatlist가 재렌더링되어도 스크롤위치가 유지된다.
         }}
+        removeClippedSubviews={true}
       />
     </SafeAreaView>
   );

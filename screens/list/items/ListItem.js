@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Dimensions, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Image, Text, TouchableOpacity, View } from 'react-native';
 
 const ListItem = ({ item, index, containerStyle, boxStyle, onPress, onLayout }) => {
   return (
@@ -9,7 +9,10 @@ const ListItem = ({ item, index, containerStyle, boxStyle, onPress, onLayout }) 
       onLayout={onLayout}
     >
       <View style={containerStyle}>
-        <View style={boxStyle}></View>
+        <Image
+          style={boxStyle}
+          source={{uri: "https://newsimg.sedaily.com/2017/04/18/1OEP2BWRPS_1.gif"}}
+        />
         <Text>{item.toString()}</Text>
       </View>
     </TouchableOpacity>
