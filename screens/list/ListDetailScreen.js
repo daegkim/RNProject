@@ -6,7 +6,6 @@ import ListItem from './items/ListItem';
 
 const ListDetailScreen = ({ route }) => {
   const [data, setData] = useState([]);
-  // const [data, setData] = useState(route.params.data || []);
   const [isMoreLoading, setMoreLoading] = useState(false);
   const [itemHeights, setItemHeights] = useState([]);
   const [itemCount, setItemCount] = useState(0);
@@ -63,7 +62,6 @@ const ListDetailScreen = ({ route }) => {
   // flatlist
   const renderItem = ({ item, index }) => {
     const padding = 10;
-    const randomHeight = Math.floor(Math.random() * (71)) + 30;
     const handleLayout = (e) => {
       const height = e.nativeEvent.layout.height;
       const pageIndex = selectedIndex % pageCount;
@@ -82,7 +80,7 @@ const ListDetailScreen = ({ route }) => {
         index={index}
         containerStyle={{
           padding: padding,
-          height: width + 30,
+          height: width + 30 + (index % 3 === 0 ? 0 : (index % 3 === 1 ? 50 : 100)),
           backgroundColor: index % 2 ? "red" : "green",
         }}
         boxStyle={{
@@ -155,14 +153,13 @@ const ListDetailScreen = ({ route }) => {
     const pageIndex = selectedIndex % pageCount;
     if (itemHeights.length === pageIndex) {
       let offsets = itemHeights.reduce((prev, curr) => prev + curr, 0);
-      if (selectedIndex >= 10) {
-        offsets += 50;
-      }
-      refFlatList.current.scrollToOffset({
-        offset: offsets,
-        animated: false,
-      });
-      setInitFinished(true);
+      setTimeout(() => {
+        refFlatList.current.scrollToOffset({
+          offset: offsets,
+          animated: false,
+        });
+        setInitFinished(true);
+      }, 10);
     }
   }, [itemHeights]);
 
