@@ -1,12 +1,11 @@
 import React, { useEffect } from 'react';
 import { Dimensions, Image, Text, TouchableOpacity, View } from 'react-native';
 
-const ListItem = ({ item, index, containerStyle, boxStyle, onPress, onLayout }) => {
+const ListItem = ({ item, index, containerStyle, boxStyle, onPress }) => {
   return (
     <TouchableOpacity
       activeOpacity={onPress ? 0.7 : 1}
       onPress={onPress}
-      onLayout={onLayout}
     >
       <View style={containerStyle}>
         <Image

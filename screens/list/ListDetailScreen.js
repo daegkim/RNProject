@@ -7,8 +7,6 @@ import ListItem from './items/ListItem';
 const ListDetailScreen = ({ route }) => {
   const [data, setData] = useState([]);
   const [isMoreLoading, setMoreLoading] = useState(false);
-  const [itemHeights, setItemHeights] = useState([]);
-  const [itemCount, setItemCount] = useState(0);
   const [isInitFinished, setInitFinished] = useState(false);
 
   const refFlatList = useRef(null);
@@ -16,10 +14,8 @@ const ListDetailScreen = ({ route }) => {
   const width = Dimensions.get("window").width;
   const selectedIndex = route.params.index;
   const pageCount = 10;
-  const [renderedItemCount, setRenderedItemCount] = useState(0);
 
   // func
-
   const addEndData = () => {
     if (isMoreLoading) {
       return;
@@ -60,11 +56,6 @@ const ListDetailScreen = ({ route }) => {
   // flatlist
   const renderItem = useCallback(({ item, index }) => {
     const padding = 10;
-    const handleLayout = (e) => {
-      if (!isInitFinished) {
-        setRenderedItemCount(prev => prev + 1);
-      }
-    }
 
     return (
       <ListItem
@@ -79,7 +70,6 @@ const ListDetailScreen = ({ route }) => {
           width: width - padding * 2,
           height: width - padding * 2,
         }}
-        onLayout={handleLayout}
       />
     )
   }, [isInitFinished]);
@@ -123,53 +113,60 @@ const ListDetailScreen = ({ route }) => {
     )
   };
 
+  const keyExtractor = (item, index) => {
+    return item.toString();
+  };
+
   const handleEndReached = () => {
     if (!isMoreLoading) {
       addEndData();
     }
   };
 
-  const keyExtractor = (item, index) => {
-    return item.toString();
-  };
-
   const handleFlatListScroll = (e) => {
     const offsetY = e.nativeEvent.contentOffset.y;
-    if (offsetY == 0) {
+    if (offsetY == 0 && data.length > 0) {
       addStartData();
     }
   };
 
-  useEffect(() => {
-    const newData = route.params.data.slice();
-    const pageNumber = Math.floor(route.params.index / pageCount);
-    setData(route.params.data.slice(route.params.index, (pageNumber + 2) * pageCount));
-  }, [route.params.data, route.params.index]);
-
-  useEffect(() => {
-    if (renderedItemCount > 0 && renderedItemCount === data.length && !isInitFinished) {
+  const handleContentSizeChange = () => {
+    if (!isInitFinished) {
       setData(prev => {
-        // 이 부분 때문에 initialNumToRender를 큰 값으로 변경해야 한다.
+        /**
+         * const pageNumber = Math.floor(route.params.index / pageCount);
+         * const newData = route.params.data.slice(pageNumber * pageCount, route.params.index);
+         * initialNumToRender={pageCount + 2}
+         */
         const newData = route.params.data.slice(0, route.params.index);
+        setInitFinished(true);
         return [...newData, ...prev];
       });
-      setInitFinished(true);
     }
-  }, [renderedItemCount, isInitFinished]);
+  }
+
+  useEffect(() => {
+    if (!isInitFinished) {
+      const newData = route.params.data.slice();
+      const pageNumber = Math.floor(route.params.index / pageCount);
+      setData(route.params.data.slice(route.params.index, (pageNumber + 2) * pageCount));
+    }
+  }, [route.params.data, route.params.index]);
 
   return (
     <SafeAreaView>
       <FlatList
         ref={refFlatList}
         data={data}
-        initialNumToRender={data.length} // maintainVisibleContentPosition를 적용시키기 위해서 x + 2를 해준다. +2의 이유는 위 아래 하나씩 더 추가
-        windowSize={5}
         renderItem={renderItem}
         ListHeaderComponent={listHeaderItem}
         ListFooterComponent={listFooterItem}
         keyExtractor={keyExtractor}
         onEndReached={handleEndReached}
         onScroll={handleFlatListScroll}
+        onContentSizeChange={handleContentSizeChange}
+        initialNumToRender={data.length} // 이게 싫다면 상단으로도 무한스크롤이 되도록 한다.
+        windowSize={5}
         maintainVisibleContentPosition={{
           minIndexForVisible: 0, //Flatlist가 재렌더링되어도 스크롤위치가 유지된다.
         }}
