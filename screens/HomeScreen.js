@@ -13,6 +13,9 @@ const HomeScreen = ({ navigation }) => {
       case "ListMain":
         navigation.navigate("ListMainScreen");
         break;
+      case "ListMain2":
+        navigation.navigate("ListMain2Screen");
+        break;
     }
   }
 
@@ -26,7 +29,12 @@ const HomeScreen = ({ navigation }) => {
               handlePressButton("ListMain");
             }}
           />
-          <Button title="ListMain" />
+          <Button
+            title="ListMain2"
+            onPress={() => {
+              handlePressButton("ListMain2");
+            }}
+          />
           <Button title="ListMain" />
         </View>
       </View>
