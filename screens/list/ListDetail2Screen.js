@@ -53,9 +53,7 @@ const ListDetail2Screen = ({ navigation, route }) => {
         windowSize={3}
         initialScrollIndex={selectedIndex}
         removeClippedSubviews={true}
-      >
-      </FlatList>
-
+      />
     </SafeAreaView>
   );
 };
